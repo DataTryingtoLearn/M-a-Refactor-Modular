@@ -1,0 +1,355 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIA - Centro de Comando 🛡️</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .bg-chat { background-color: #e5ddd5; background-image: url("https://www.transparenttextures.com/patterns/cubes.png"); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-gray-100 h-screen flex overflow-hidden font-sans text-gray-800">
+
+    <div class="w-1/3 bg-white border-r border-gray-300 flex flex-col z-10 shadow-lg relative">
+        <div class="bg-gray-50 p-4 border-b">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="font-bold text-gray-700 flex items-center gap-2">
+                    <i class="fas fa-shield-alt text-blue-600"></i> Centro de Comando
+                </h2>
+                <div class="text-xs text-green-600 font-mono flex items-center gap-1">
+                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> Online
+                </div>
+            </div>
+            <div class="relative">
+                <input type="text" id="buscador" onkeyup="buscarChat(event)" placeholder="🔍 Buscar tel o texto..." 
+                    class="w-full p-2 pl-8 rounded border border-gray-300 text-sm focus:outline-none focus:border-blue-500">
+                <i class="fas fa-search absolute left-3 top-2.5 text-gray-400 text-xs"></i>
+            </div>
+        </div>
+
+       <div class="bg-white border-b shadow-sm">
+            <div class="flex overflow-x-auto no-scrollbar py-2 px-2 gap-2" id="filtros-container">
+                <button onclick="filtrar('TODOS')" id="btn-TODOS" class="whitespace-nowrap px-3 py-1 rounded-full text-xs font-bold border border-blue-100 bg-blue-50 text-blue-600 transition hover:bg-blue-100 ring-2 ring-blue-500">
+                    📂 TODOS
+                </button>
+                
+                <button onclick="filtrar('VENTA')" id="btn-VENTA" class="filter-btn whitespace-nowrap px-3 py-1 rounded-full text-xs font-medium border border-gray-200 text-gray-500 hover:bg-teal-50 hover:text-teal-600">
+                    🤑 VENTA
+                </button>
+                
+                <button onclick="filtrar('PERMITIDO')" id="btn-PERMITIDO" class="filter-btn whitespace-nowrap px-3 py-1 rounded-full text-xs font-medium border border-gray-200 text-gray-500 hover:bg-green-50 hover:text-green-600">
+                    ⭐ PERMITIDO
+                </button>
+
+                <button onclick="filtrar('PERMITIDO_R3')" id="btn-PERMITIDO_R3" class="filter-btn whitespace-nowrap px-3 py-1 rounded-full text-xs font-medium border border-gray-200 text-gray-500 hover:bg-fuchsia-50 hover:text-fuchsia-600">
+                    🌟 PERMITIDO R3
+                </button>
+
+                <button onclick="filtrar('YA ES TELCEL')" id="btn-YATELCEL" class="filter-btn whitespace-nowrap px-3 py-1 rounded-full text-xs font-medium border border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-blue-600">
+                    🔵 YA ES TELCEL
+                </button>
+                
+                <button onclick="filtrar('REPEP')" id="btn-REPEP" class="filter-btn whitespace-nowrap px-3 py-1 rounded-full text-xs font-medium border border-gray-200 text-gray-500 hover:bg-purple-50 hover:text-purple-600">
+                    📵 REPEP
+                </button>
+                
+                <button onclick="filtrar('FUERAREGION')" id="btn-FUERAREGION" class="filter-btn whitespace-nowrap px-3 py-1 rounded-full text-xs font-medium border border-gray-200 text-gray-500 hover:bg-pink-50 hover:text-pink-600">
+                    🏜️ FUERA REGION
+                </button>
+                
+                <button onclick="filtrar('PORTOUT60')" id="btn-PORTOUT60" class="filter-btn whitespace-nowrap px-3 py-1 rounded-full text-xs font-medium border border-gray-200 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600">
+                    ⏳ PORTOUT60
+                </button>
+                
+                <button onclick="filtrar('ABANDONADO')" id="btn-ABANDONADO" class="filter-btn whitespace-nowrap px-3 py-1 rounded-full text-xs font-medium border border-gray-200 text-gray-500 hover:bg-gray-100 hover:text-gray-700">
+                    👻 ABANDONADO
+                </button>
+                
+                <button onclick="filtrar('ERROR')" id="btn-ERROR" class="filter-btn whitespace-nowrap px-3 py-1 rounded-full text-xs font-medium border border-gray-200 text-gray-500 hover:bg-red-50 hover:text-red-600">
+                    💀 ERRORES
+                </button>
+            </div>
+        </div>
+        
+        <div id="lista-chats" class="flex-1 overflow-y-auto bg-gray-50">
+            <p class="text-center text-gray-400 mt-10 text-xs">Cargando...</p>
+        </div>
+    </div>
+
+    <div class="w-2/3 flex flex-col relative bg-white">
+        <div class="bg-gray-50 border-b shadow-sm z-10">
+            <div class="flex justify-between items-center p-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold border border-blue-200">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div>
+                        <h3 id="chat-nombre" class="font-bold text-gray-800 text-lg">Selecciona un chat</h3>
+                        <p id="chat-status" class="text-xs text-gray-400">Esperando selección...</p>
+                    </div>
+                </div>
+                <button id="btn-reactivar" onclick="reactivarBot()" class="hidden bg-green-100 text-green-700 px-4 py-2 rounded-full text-xs font-bold hover:bg-green-200 transition items-center gap-2 border border-green-200">
+                    <i class="fas fa-robot"></i> REACTIVAR MIA
+                </button>
+            </div>
+
+            <div id="panel-resultados" class="hidden bg-slate-100 border-t border-slate-200 px-4 py-3 flex justify-between items-center text-xs">
+                <div class="flex gap-8 w-full">
+                    <div>
+                        <span class="text-slate-400 font-bold text-[10px] block mb-1"><i class="fas fa-mobile-alt"></i> NÚMERO A PORTAR</span> 
+                        <span id="res-numero" class="font-mono font-bold text-slate-800 text-sm">-</span>
+                    </div>
+                    
+                    <div class="bg-white px-3 py-1 rounded shadow-sm border border-orange-200">
+                        <span class="text-orange-500 font-bold text-[9px] block mb-0.5"><i class="fas fa-comment-dots"></i> ESTATUS CHAT</span> 
+                        <span id="res-estatus-chat" class="font-bold text-orange-600 uppercase text-sm">-</span>
+                    </div>
+
+                    <div class="bg-white px-3 py-1 rounded shadow-sm border border-teal-200">
+                        <span class="text-teal-500 font-bold text-[9px] block mb-0.5"><i class="fas fa-check-circle"></i> ESTATUS OK</span> 
+                        <span id="res-estatus-ok" class="font-bold text-teal-600 uppercase text-sm">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="zona-notas" class="hidden px-4 py-2 bg-yellow-50 border-t border-yellow-100 flex gap-2">
+                <textarea id="txt-comentario" class="w-full text-xs p-2 border border-yellow-200 rounded bg-yellow-50 focus:bg-white focus:outline-none focus:border-yellow-400 resize-none h-8" placeholder="📝 Notas internas..."></textarea>
+                <button onclick="guardarNota()" class="bg-yellow-400 text-yellow-900 px-3 rounded text-xs font-bold hover:bg-yellow-500"><i class="fas fa-save"></i></button>
+            </div>
+        </div>
+
+        <div id="zona-mensajes" class="flex-1 overflow-y-auto p-4 bg-chat flex flex-col gap-3">
+            <div class="text-center mt-20 text-gray-400 bg-white/90 p-8 rounded-xl shadow-sm mx-auto max-w-md border border-gray-200">
+                <i class="fas fa-shield-alt text-4xl text-blue-200 mb-4"></i><br>
+                Centro de Comando MIA<br><span class="text-xs">Selecciona una conversación</span>
+            </div>
+        </div>
+
+        <div class="bg-gray-50 p-4 border-t flex items-center gap-3 relative">
+            <div id="aviso-ventana" class="hidden absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-red-100 text-red-600 px-4 py-2 rounded-full text-xs font-bold shadow-lg border border-red-200 animate-bounce">
+                <i class="fas fa-lock"></i> Ventana de 24h Cerrada
+            </div>
+            <input type="text" id="input-manual" placeholder="Escribe un mensaje manual..." 
+                class="flex-1 p-3 rounded-full border border-gray-300 focus:outline-none focus:border-blue-500 shadow-sm bg-white transition disabled:bg-gray-200" disabled>
+            <button id="btn-enviar" onclick="enviarManual()" 
+                class="bg-blue-600 hover:bg-blue-700 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition disabled:bg-gray-400" disabled>
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let telefonoActual = null;
+        let filtroActual = 'TODOS';
+        let chatsData = []; 
+        let busquedaActual = '';
+
+        function buscarChat(event) { if(event.key === 'Enter') { busquedaActual = document.getElementById('buscador').value; cargarChats(); } }
+
+        async function cargarChats() {
+            try {
+                const res = await fetch(`/api/chats?q=${encodeURIComponent(busquedaActual)}`);
+                if (res.status === 401) { location.reload(); return; }
+                chatsData = await res.json(); 
+                renderizarListaChats();
+            } catch (e) { console.error(e); }
+        }
+
+        function renderizarListaChats() {
+            const container = document.getElementById('lista-chats');
+            const scrollPos = container.scrollTop;
+            let html = '';
+
+            const chatsFiltrados = chatsData.filter(c => {
+                const estatus = (c.estatus_ok || '').toUpperCase(); 
+
+                if (filtroActual === 'TODOS') return true;
+                if (filtroActual === 'ERROR') return estatus.includes('ERROR') || estatus.includes('RECHAZO');
+                if (filtroActual === 'VENTA') return estatus.includes('VENTA');
+                return estatus === filtroActual;
+            });
+
+            if(chatsFiltrados.length === 0) { container.innerHTML = `<div class="text-center p-10 text-gray-400 text-xs">Sin resultados en ${filtroActual}</div>`; return; }
+
+            chatsFiltrados.forEach(c => {
+                const activeClass = (c.telefono === telefonoActual) ? 'bg-blue-50 border-l-4 border-blue-500' : 'bg-white hover:bg-gray-50 border-l-4 border-transparent border-b';
+                
+                // COLORES DE BADGES DE NEGOCIO
+                let badgeClass = "bg-gray-100 text-gray-500";
+                const st = (c.estatus_ok || '').toUpperCase();
+
+                if(st.includes('VENTA')) badgeClass = "bg-teal-100 text-teal-700 border-teal-200";
+                if(st === 'PERMITIDO_R3') badgeClass = "bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200";
+                if(st === 'PERMITIDO') badgeClass = "bg-green-100 text-green-700";
+                if(st === 'ABANDONADO') badgeClass = "bg-gray-100 text-gray-600";
+                if(st === 'YA ES TELCEL') badgeClass = "bg-blue-100 text-blue-600";
+                if(st === 'REPEP') badgeClass = "bg-purple-100 text-purple-600";
+                if(st === 'FUERAREGION') badgeClass = "bg-pink-100 text-pink-600";
+                if(st === 'PORTOUT60') badgeClass = "bg-indigo-100 text-indigo-600";
+                if(st.includes('ERROR')) badgeClass = "bg-red-100 text-red-600";
+
+                let badge = `<span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase ${badgeClass}">${st}</span>`;
+                
+                // ÍCONOS VISUALES
+                let iconNota = c.comentarios ? '<i class="fas fa-sticky-note text-yellow-500 text-xs ml-1" title="Nota interna"></i>' : '';
+                let reloj24h = c.ventana_24h ? '<i class="fas fa-circle text-green-500 text-[8px]" title="Ventana 24h Abierta"></i>' : '<i class="fas fa-circle text-gray-300 text-[8px]" title="Ventana Cerrada"></i>';
+
+                let iconBot = c.estado === 'MANUAL' 
+                    ? '<i class="fas fa-user-astronaut text-purple-600 text-xs ml-2" title="Modo Manual"></i>' 
+                    : '<i class="fas fa-robot text-blue-400 text-xs ml-2" title="MIA Auto"></i>';
+
+                html += `<div onclick="seleccionarChat('${c.telefono}')" class="p-3 cursor-pointer transition ${activeClass}">
+                    <div class="flex justify-between items-center mb-1">
+                        <div class="flex items-center">
+                            <span class="font-bold text-gray-800 text-sm">${c.telefono}</span>
+                            ${iconBot}
+                            ${iconNota}
+                        </div>
+                        <span class="text-[10px] text-gray-400 font-mono">${c.fecha}</span>
+                    </div>
+                    <div class="flex justify-between items-center mt-1">
+                        ${badge}
+                        ${reloj24h}
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html; container.scrollTop = scrollPos;
+        }
+
+        function filtrar(tipo) {
+            filtroActual = tipo;
+            document.querySelectorAll('#filtros-container button').forEach(btn => {
+                btn.className = "whitespace-nowrap px-3 py-1 rounded-full text-xs font-medium border border-gray-200 text-gray-500 hover:bg-gray-50 transition";
+            });
+            
+            // Colores activos para botones
+            let activeColor = "border-blue-500 bg-blue-50 text-blue-600"; 
+            if (tipo === 'VENTA') activeColor = "border-teal-500 bg-teal-50 text-teal-600";
+            if (tipo === 'PERMITIDO_R3') activeColor = "border-fuchsia-500 bg-fuchsia-50 text-fuchsia-600";
+            if (tipo === 'PERMITIDO') activeColor = "border-green-500 bg-green-50 text-green-600";
+            if (tipo === 'ERROR') activeColor = "border-red-500 bg-red-50 text-red-600";
+            if (tipo === 'REPEP') activeColor = "border-purple-500 bg-purple-50 text-purple-600";
+            if (tipo === 'FUERAREGION') activeColor = "border-pink-500 bg-pink-50 text-pink-600";
+
+            const btnActivo = document.getElementById(tipo === 'YA ES TELCEL' ? 'btn-YATELCEL' : `btn-${tipo}`);
+            if(btnActivo) btnActivo.className = `whitespace-nowrap px-3 py-1 rounded-full text-xs font-bold border shadow-sm ring-1 ${activeColor}`;
+            
+            renderizarListaChats();
+        }
+
+        async function seleccionarChat(telefono) {
+            telefonoActual = telefono;
+            const chatData = chatsData.find(c => c.telefono === telefono);
+            document.getElementById('chat-nombre').innerText = telefono;
+            
+            const zonaNotas = document.getElementById('zona-notas');
+            zonaNotas.classList.remove('hidden');
+            document.getElementById('txt-comentario').value = chatData.comentarios || '';
+
+            const panelRes = document.getElementById('panel-resultados');
+            
+            // 🔥 AHORA EL PANEL SIEMPRE SE MUESTRA PARA VER EL "ESTATUS OK" 🔥
+            if(chatData) {
+                panelRes.classList.remove('hidden');
+                document.getElementById('res-numero').innerText = chatData.info_portabilidad.numero_portar || '-';
+                document.getElementById('res-estatus-ok').innerText = chatData.estatus_ok || '-'; 
+                document.getElementById('res-estatus-chat').innerText = chatData.estatus_conversacion || '-'; 
+            } else { 
+                panelRes.classList.add('hidden'); 
+            }
+
+            const input = document.getElementById('input-manual');
+            const btnEnviar = document.getElementById('btn-enviar');
+            const aviso = document.getElementById('aviso-ventana');
+            if (!chatData.ventana_24h) {
+                input.disabled = true; btnEnviar.disabled = true; aviso.classList.remove('hidden'); input.placeholder = "🚫 Ventana Cerrada.";
+            } else {
+                input.disabled = false; btnEnviar.disabled = false; aviso.classList.add('hidden'); input.placeholder = "Escribe un mensaje...";
+            }
+
+            const statusTxt = document.getElementById('chat-status');
+            const btnReactivar = document.getElementById('btn-reactivar');
+            if(chatData.estado === 'MANUAL') {
+                statusTxt.innerHTML = '<span class="text-purple-600 font-bold">Manual</span>';
+                btnReactivar.classList.remove('hidden'); btnReactivar.classList.add('flex');
+            } else {
+                statusTxt.innerHTML = '<span class="text-green-600">Auto (MIA)</span>';
+                btnReactivar.classList.add('hidden'); btnReactivar.classList.remove('flex');
+            }
+            renderizarListaChats(); renderizarMensajes();
+        }
+
+        async function renderizarMensajes() {
+            if (!telefonoActual) return;
+            try {
+                const res = await fetch(`/api/historial/${telefonoActual}`);
+                const logs = await res.json();
+                const zona = document.getElementById('zona-mensajes');
+                const isAtBottom = zona.scrollHeight - zona.scrollTop <= zona.clientHeight + 100;
+                let html = '';
+                logs.forEach(log => {
+                    const fechaDisplay = log.fecha; 
+                    if (log.mensaje_usuario && !log.mensaje_usuario.startsWith('[')) {
+                        html += `<div class="self-start bg-white p-3 rounded-xl rounded-tl-none shadow-sm max-w-[85%] text-sm text-gray-800 border border-gray-100 relative group">
+                            <div class="font-bold text-blue-600 text-[10px] mb-1"><i class="fas fa-user"></i> Cliente</div>
+                            ${log.mensaje_usuario}
+                            <div class="text-[9px] text-gray-400 text-right mt-1 opacity-70">${fechaDisplay}</div>
+                        </div>`;
+                    }
+                    if (log.respuesta_bot) {
+                        let style = "bg-green-100 border-green-200 text-gray-800";
+                        let iconHeader = '<i class="fas fa-robot"></i> MIA';
+                        if(log.estado === 'MANUAL') { style = "bg-yellow-50 border-yellow-200 text-gray-800"; iconHeader = '<i class="fas fa-user-astronaut"></i> TÚ (Manual)'; }
+                        if(log.estado === 'SEGUIMIENTO') { style = "bg-orange-50 border-orange-200 text-gray-800"; iconHeader = '<i class="fas fa-bolt"></i> MIA (Seguimiento)'; }
+
+                        if(!log.respuesta_bot.includes('[SILENCIO')) {
+                            html += `<div class="self-end ${style} p-3 rounded-xl rounded-tr-none shadow-sm max-w-[85%] text-sm border relative group">
+                                <div class="font-bold text-[10px] mb-1 opacity-75 flex items-center gap-1">${iconHeader}</div>
+                                ${log.respuesta_bot.replace(/\n/g, '<br>')}
+                                <div class="text-[9px] text-gray-400 text-right mt-1 opacity-70">${fechaDisplay}</div>
+                            </div>`;
+                        }
+                    }
+                });
+                zona.innerHTML = html; if (isAtBottom) zona.scrollTop = zona.scrollHeight;
+            } catch (e) { console.error(e); }
+        }
+
+        async function guardarNota() {
+            if(!telefonoActual) return;
+            const nota = document.getElementById('txt-comentario').value;
+            await fetch('/api/guardar_comentario', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ telefono: telefonoActual, comentario: nota }) });
+            cargarChats();
+        }
+
+        async function enviarManual() {
+            const input = document.getElementById('input-manual');
+            const texto = input.value.trim();
+            if (!texto) return;
+            input.value = '';
+            await fetch('/enviar_manual', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ telefono: telefonoActual, texto: texto }) });
+            setTimeout(() => { seleccionarChat(telefonoActual); cargarChats(); }, 800);
+        }
+
+        async function reactivarBot() {
+            if(!confirm("¿Reactivar?")) return;
+            await fetch(`/api/reactivar/${telefonoActual}`, { method: 'POST' });
+            setTimeout(() => { seleccionarChat(telefonoActual); cargarChats(); }, 800);
+        }
+
+        document.getElementById('input-manual').addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarManual(); });
+        setInterval(() => { 
+            if (!document.hidden) {
+                if(!busquedaActual) cargarChats(); 
+                if(telefonoActual) renderizarMensajes(); 
+            }
+        }, 30000);
+        cargarChats();
+    </script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+flask
+psutil
+pytz
+pyodbc
+python-dotenv
+requests
+google-generativeai
